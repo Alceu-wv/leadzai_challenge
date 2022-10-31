@@ -1,4 +1,5 @@
-from typing import Iterable
+from collections import deque
+from typing import Deque, Iterable
 
 from paginator_generator.error_handler import PaginationGeneratorErrorHandler
 
@@ -55,25 +56,15 @@ class PaginationGenerator:
         midle = self._get_middle()
         end = self._get_end()
 
-        builded_pagination = sorted(list(begining | end | midle | {self.current_page}))
-        builded_pagination = self._clean_numbers_out_of_range(builded_pagination)
+        pagination = sorted(deque(begining | end | midle | {self.current_page}))
+        pagination = self._clean_numbers_out_of_range(pagination)
 
-        get_indexes_to_be_fold = self._get_indexes_to_be_fold(builded_pagination)
+        get_indexes_to_be_fold = self._get_indexes_to_be_fold(pagination)
 
         for index in get_indexes_to_be_fold:
-            builded_pagination.insert(index, "...")
+            pagination.insert(index, "...")
 
-        return builded_pagination
-
-    def _get_indexes_to_be_fold(self, builded_pagination: list) -> Iterable:
-        indexes_to_be_fold = []
-        for count, value in enumerate(builded_pagination):
-            try:
-                if value + 1 != builded_pagination[count + 1]:
-                    indexes_to_be_fold.append(count + 1)
-            except IndexError:
-                break
-        return reversed(indexes_to_be_fold)
+        return pagination
 
     def _get_beggining(self) -> set:
         return set(range(self.FIRST_PAGE, self.FIRST_PAGE + self.boundaries))
@@ -89,9 +80,19 @@ class PaginationGenerator:
     def _get_end(self) -> set:
         return set(range(self.total_pages, self.total_pages - self.boundaries, -1))
 
-    def _clean_numbers_out_of_range(self, list_of_numbers: list) -> list:
-        numbers = list_of_numbers.copy()
+    def _clean_numbers_out_of_range(self, pagination: Deque) -> Deque:
+        numbers = pagination.copy()
         for number in numbers:
             if number <= 0 or number > self.total_pages:
-                list_of_numbers.remove(number)
-        return list_of_numbers
+                pagination.remove(number)
+        return pagination
+    
+    def _get_indexes_to_be_fold(self, pagination: Deque) -> Iterable:
+        indexes_to_be_fold = []
+        for count, value in enumerate(pagination):
+            try:
+                if value + 1 != pagination[count + 1]:
+                    indexes_to_be_fold.append(count + 1)
+            except IndexError:
+                break
+        return reversed(indexes_to_be_fold)
