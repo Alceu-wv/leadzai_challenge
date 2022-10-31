@@ -10,3 +10,4 @@ def error_handler():
 @pytest.fixture()
 def paginator():
     return PaginationGenerator(current_page=1, total_pages=1, boundaries=0, around=0)
+
