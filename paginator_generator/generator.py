@@ -5,7 +5,7 @@ from paginator_generator.error_handler import PaginationGeneratorErrorHandler
 
 class PaginationGenerator:
     FIRST_PAGE = 1
-    
+
     """
     Generate custom pagination to show in a footer website.
     """
@@ -41,7 +41,6 @@ class PaginationGenerator:
         PaginationGeneratorErrorHandler(
             current_page, total_pages, boundaries, around
         ).check_for_input_errors()
-        
 
     def build_pagination(self) -> list:
 
@@ -96,4 +95,3 @@ class PaginationGenerator:
             if number <= 0 or number > self.total_pages:
                 list_of_numbers.remove(number)
         return list_of_numbers
-
