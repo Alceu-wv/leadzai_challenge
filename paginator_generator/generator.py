@@ -4,6 +4,8 @@ from paginator_generator.error_handler import PaginationGeneratorErrorHandler
 
 
 class PaginationGenerator:
+    FIRST_PAGE = 1
+    
     """
     Generate custom pagination to show in a footer website.
     """
@@ -35,12 +37,11 @@ class PaginationGenerator:
         self.total_pages = total_pages
         self.boundaries = boundaries
         self.around = around
-        self.first_page = 1
-        self.last_page = total_pages
 
         PaginationGeneratorErrorHandler(
             current_page, total_pages, boundaries, around
         ).check_for_input_errors()
+        
 
     def build_pagination(self) -> list:
 
@@ -48,7 +49,7 @@ class PaginationGenerator:
         Example
         ------
         current_page = 4; total_pages = 5; boundaries = 1; around = 0
-        Expected result: 1 ... 4 5
+        Expected result: [1, ..., 4, 5]
         """
 
         begining = self._get_beggining()
@@ -76,7 +77,7 @@ class PaginationGenerator:
         return reversed(indexes_to_be_fold)
 
     def _get_beggining(self) -> set:
-        return set(range(self.first_page, self.first_page + self.boundaries))
+        return set(range(self.FIRST_PAGE, self.FIRST_PAGE + self.boundaries))
 
     def _get_middle(self) -> set:
         middle = set()
@@ -87,17 +88,12 @@ class PaginationGenerator:
         return middle
 
     def _get_end(self) -> set:
-        return set(range(self.last_page, self.last_page - self.boundaries, -1))
+        return set(range(self.total_pages, self.total_pages - self.boundaries, -1))
 
     def _clean_numbers_out_of_range(self, list_of_numbers: list) -> list:
         numbers = list_of_numbers.copy()
         for number in numbers:
-            # print(number)
             if number <= 0 or number > self.total_pages:
                 list_of_numbers.remove(number)
         return list_of_numbers
 
-
-# print(PaginationGenerator(current_page=2, total_pages=5, boundaries=2, around=0).build_pagination())
-# get_pagination_index(current_page=4, total_pages=5, boundaries=1, around=0)
-# print(get_indexes_to_be_fold([1, 2, 3, 4, 5, 6, 9, 10]))

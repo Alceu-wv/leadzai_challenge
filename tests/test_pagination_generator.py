@@ -1,5 +1,5 @@
+from unittest.mock import MagicMock
 import pytest
-from typing import Iterable
 from paginator_generator.generator import PaginationGenerator
 
 @pytest.mark.parametrize(
@@ -49,7 +49,7 @@ def test__get_middle(paginator: PaginationGenerator, current_page, around, resul
 )
 def test__get_end(paginator: PaginationGenerator, pages, boundaries, result_to_assert):
     paginator.boundaries = boundaries
-    paginator.last_page = pages
+    paginator.total_pages = pages
     
     result = paginator._get_end()
     
@@ -97,5 +97,14 @@ def test__get_indexes_to_be_fold(paginator: PaginationGenerator, list_to_parse, 
     
     assert list(result) == indexes_to_be_fold
 
-def test_build_pagination():
-    pass
+
+def test_build_pagination(mocker, paginator: PaginationGenerator,):
+    mocker.patch.object(PaginationGenerator, "_get_beggining", restur_value=set())
+    mocker.patch.object(PaginationGenerator, "_get_middle", restur_value=set())
+    mocker.patch.object(PaginationGenerator, "_get_end", restur_value=set())
+    mocker.patch.object(PaginationGenerator, "_clean_numbers_out_of_range", restur_value=set())
+    mocker.patch.object(PaginationGenerator, "_get_indexes_to_be_fold", restur_value=set())
+    
+    assert isinstance(paginator.build_pagination(), MagicMock)
+    
+    
