@@ -3,7 +3,12 @@
 
 <div align="center"><a href="https://www.linkedin.com/search/results/all/?heroEntityKey=urn%3Ali%3Aorganization%3A11167813&keywords=leadzai&origin=RICH_QUERY_SUGGESTION&position=0&searchId=8bbbd053-abf8-4baf-ac33-b2a667d10366&sid=lEP"><img width="96" src="https://media-exp1.licdn.com/dms/image/C4D0BAQGnH06aQberMA/company-logo_100_100/0/1662396543001?e=1675296000&amp;v=beta&amp;t=kx9oZeGNjJNAcnwATPdzFlsSycwLZuN2PKQeI6RifEA" loading="lazy" height="96" alt="Leadzai" id="ember666" class="ivm-view-attr__img--centered EntityPhoto-square-6  lazy-image ember-view"></div>
 
-<div align="center"><a href=".docs/Leadzai_challenge">Read the challenge description</a></div>
+<div align="center" width=200>
+<a href=".docs/Leadzai_challenge">Read the challenge description</a>
+<br>
+<a href=".docs/HOW_TO_USE.md">HOW TO USE</a>
+</div>
+
 
 <br>
 <br>
