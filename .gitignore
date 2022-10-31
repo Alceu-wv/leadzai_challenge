@@ -53,6 +53,7 @@ coverage.xml
 **/xunittest.xml
 test_results
 *.pyc
+test/__pycache__
 
 # Translations
 *.mo

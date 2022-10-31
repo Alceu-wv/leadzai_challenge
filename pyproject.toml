@@ -8,6 +8,7 @@ authors = ["Alceu-wv <alceu.wv@gmail.com>"]
 python = "^3.10"
 pytest = "^7.2.0"
 pre-commit = "^2.20.0"
+pytest-mock = "^3.10.0"
 
 [tool.poetry.dev-dependencies]
 
