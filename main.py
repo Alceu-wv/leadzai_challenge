@@ -2,24 +2,26 @@ from paginator_generator.error_handler import PaginationGeneratorError
 from paginator_generator.generator import PaginationGenerator
 
 
-def input_argument(message: str) -> int:
+def input_integer(message: str) -> int:
     """Receive an argument from command line, repeat message until the argument can be parsed to integer"""
 
     argument = None
-    while argument is None:
+    while argument is None or argument < 0:
         try:
             argument = int(input(message))
+            if argument < 0:
+                raise ValueError
         except ValueError:
-            print("Input must be a number.")
+            print("Input must be a positive number.")
     return argument
 
 
 def run():
 
-    total_pages = input_argument("Insert total pages: ")
-    current_page = input_argument("Insert current page: ")
-    boundaries = input_argument("Insert boundaries: ")
-    around = input_argument("Insert around: ")
+    total_pages = input_integer("Insert total pages: ")
+    current_page = input_integer("Insert current page: ")
+    boundaries = input_integer("Insert boundaries: ")
+    around = input_integer("Insert around: ")
 
     try:
         result = PaginationGenerator(
