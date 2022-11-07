@@ -59,17 +59,10 @@ def test_overlaping_boundaries_and_around(paginator: PaginationGenerator):
 
 
 def test_around_or_boundaries_greater_than_total_pages():
-    result_to_assert = None
-
-    try:
-        PaginationGenerator(current_page=3, total_pages=5, boundaries=3, around=3)
-    except PaginationGeneratorError as error:
-        result_to_assert = error.args[0]
-
-    assert (
-        result_to_assert
-        == "'boundaries' and 'around' sum cannot be greater than total pages."
-    )
+    result = PaginationGenerator(
+        current_page=3, total_pages=5, boundaries=3, around=3
+    ).build_pagination()
+    assert result == [1, 2, 3, 4, 5]
 
 
 def test_current_page_zero(paginator: PaginationGenerator):
