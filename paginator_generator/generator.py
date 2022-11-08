@@ -1,8 +1,11 @@
+import sys
 from collections import deque
 from itertools import islice
-from typing import Deque, Iterable, List
+from typing import Deque, Iterable
 
 from paginator_generator.error_handler import PaginationGeneratorErrorHandler
+
+sys.setrecursionlimit(10**6)
 
 
 class PaginationGenerator:
@@ -76,13 +79,13 @@ class PaginationGenerator:
         return pagination
 
     def _get_beggining(self) -> Deque:
-        """ Get first chunk of pagination """
-        
+        """Get first chunk of pagination"""
+
         return deque(range(self.FIRST_PAGE, self.FIRST_PAGE + self.boundaries))
 
     def _get_middle(self) -> Deque:
-        """ Get middle chunk of pagination """
-        
+        """Get middle chunk of pagination"""
+
         middle = deque([self.current_page])
         for i in range(1, self.around + 1):
             middle.append(self.current_page + i)
@@ -91,13 +94,13 @@ class PaginationGenerator:
         return self._slice_valid_pagination(middle)
 
     def _get_end(self) -> Deque:
-        """ Get final chunk of pagination """
+        """Get final chunk of pagination"""
         context_total_pages = self.total_pages + 1
         return deque(range(context_total_pages - self.boundaries, context_total_pages))
 
     def _slice_valid_pagination(self, pagination: Deque) -> Deque:
-        """ Remove less or equal zero numbers and numbers greater than last page"""
-        
+        """Remove less or equal zero numbers and numbers greater than last page"""
+
         if not pagination:
             return pagination
         first_valid_number_index = self._find_first_valid_number_index(pagination)
@@ -107,8 +110,8 @@ class PaginationGenerator:
         )
 
     def _get_indexes_to_fill_with_ellipsis(self, pagination: Deque) -> Iterable:
-        """ Find indexes where ellipsis signal should be putted """
-        
+        """Find indexes where ellipsis signal should be putted"""
+
         indexes_to_fill = []
 
         if not pagination or pagination == deque([0]):
@@ -144,10 +147,11 @@ class PaginationGenerator:
     def _remove_overlapping_numbers(
         self, pagination: Deque, next_chunk: Deque
     ) -> Deque:
-        """ Remove numbers from pagination that would be overlaped by next chunk append """
-        
+        """Remove numbers from pagination that would be overlaped by next chunk append"""
+
         if not pagination or not next_chunk:
             return pagination
+        
         last_unique_number = pagination[-1]
         if last_unique_number >= next_chunk[0]:
             pagination.pop()
