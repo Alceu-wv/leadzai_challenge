@@ -1,3 +1,4 @@
+from collections import deque
 from unittest.mock import MagicMock
 
 import pytest
@@ -8,9 +9,9 @@ from paginator_generator.generator import PaginationGenerator
 @pytest.mark.parametrize(
     "boundaries, result_to_assert",
     (
-        (1, {1}),
-        (2, {1, 2}),
-        (3, {1, 2, 3}),
+        (1, deque([1])),
+        (2, deque([1, 2])),
+        (3, deque([1, 2, 3])),
     ),
 )
 def test__get_beggining(paginator: PaginationGenerator, boundaries, result_to_assert):
@@ -18,7 +19,7 @@ def test__get_beggining(paginator: PaginationGenerator, boundaries, result_to_as
 
     result = paginator._get_beggining()
 
-    assert isinstance(result, set)
+    assert isinstance(result, deque)
     assert result == result_to_assert
     assert len(result) == paginator.boundaries
 
@@ -26,9 +27,9 @@ def test__get_beggining(paginator: PaginationGenerator, boundaries, result_to_as
 @pytest.mark.parametrize(
     "current_page, around, result_to_assert",
     (
-        (10, 1, {9, 11}),
-        (10, 2, {8, 9, 12, 11}),
-        (10, 3, {7, 8, 9, 11, 12, 13}),
+        (10, 1, deque([9, 10])),
+        (10, 2, deque([8, 9, 10])),
+        (10, 3, deque([7, 8, 9, 10])),
     ),
 )
 def test__get_middle(
@@ -36,20 +37,21 @@ def test__get_middle(
 ):
     paginator.around = around
     paginator.current_page = current_page
+    paginator.total_pages = 10
 
     result = paginator._get_middle()
 
-    assert isinstance(result, set)
+    assert isinstance(result, deque)
     assert result == result_to_assert
-    assert len(result) == around * 2
+    assert len(result) == around + 1
 
 
 @pytest.mark.parametrize(
     "pages, boundaries, result_to_assert",
     (
-        (10, 1, {10}),
-        (10, 2, {9, 10}),
-        (10, 3, {8, 9, 10}),
+        (10, 1, deque([10])),
+        (10, 2, deque([9, 10])),
+        (10, 3, deque([8, 9, 10])),
     ),
 )
 def test__get_end(paginator: PaginationGenerator, pages, boundaries, result_to_assert):
@@ -58,65 +60,127 @@ def test__get_end(paginator: PaginationGenerator, pages, boundaries, result_to_a
 
     result = paginator._get_end()
 
-    assert isinstance(result, set)
+    assert isinstance(result, deque)
     assert result == result_to_assert
     assert len(result) == paginator.boundaries
 
 
 @pytest.mark.parametrize(
-    "total_pages, list_to_clean, result_to_assert",
+    "total_pages, pagination, result_to_assert",
     (
-        (10, [-2, -1, 0, 1], [1]),
-        (10, [9, 10, 11], [9, 10]),
+        (10, deque([-2, -1, 0, 1]), deque([1])),
+        (10, deque([9, 10, 11]), deque([9, 10])),
     ),
     ids=["under_zero", "over_total_pages"],
 )
-def test__clean_numbers_out_of_range(
-    paginator: PaginationGenerator, total_pages, list_to_clean, result_to_assert
+def test__slice_valid_pagination(
+    paginator: PaginationGenerator, total_pages, pagination, result_to_assert
 ):
     paginator.total_pages = total_pages
 
-    result = paginator._clean_numbers_out_of_range(list_to_clean)
+    result = paginator._slice_valid_pagination(pagination)
 
     assert result == result_to_assert
-    assert isinstance(result, list)
+    assert isinstance(result, deque)
 
 
 @pytest.mark.parametrize(
-    "list_to_parse, indexes_to_be_fold",
+    "pagination, indexes_to_fill",
     (
-        ([0, 2], [1]),
-        ([10, 20], [1]),
-        ([10, 12, 13, 15], [3, 1]),
-        ([10, 20, 30], [2, 1]),
+        (deque([1, 10]), [1]),
+        (deque([1, 5, 6, 10]), [3, 1]),
     ),
     ids=[
-        "one_interval_short",
-        "one_interval_long",
-        "two_interval_short",
-        "two_interval_long",
+        "one_interval",
+        "two_interval",
     ],
 )
-def test__get_indexes_to_be_fold(
-    paginator: PaginationGenerator, list_to_parse, indexes_to_be_fold
+def test__get_indexes_to_fill_with_ellipsis(
+    paginator: PaginationGenerator, pagination, indexes_to_fill
 ):
-    result = paginator._get_indexes_to_be_fold(list_to_parse)
+    paginator.total_pages = 10
+    result = paginator._get_indexes_to_fill_with_ellipsis(pagination)
 
-    assert list(result) == indexes_to_be_fold
+    assert list(result) == indexes_to_fill
+
+
+@pytest.mark.parametrize(
+    "pagination, index_to_assert",
+    (
+        (deque([1, 2, 3]), 0),
+        (deque([6, 10]), 0),
+    ),
+    ids=[
+        "find_first_page_one",
+        "deduce_first_page",
+    ],
+)
+def test__find_first_valid_number_index(
+    paginator: PaginationGenerator, pagination, index_to_assert
+):
+    result = paginator._find_first_valid_number_index(pagination)
+
+    assert result == index_to_assert
+
+
+@pytest.mark.parametrize(
+    "pagination, index_to_assert",
+    (
+        (deque([1, 2, 3]), 2),
+        (deque([6, 10]), 3),
+    ),
+    ids=[
+        "find_first_page_one",
+        "deduce_first_page",
+    ],
+)
+def test__find_last_valid_number_index(
+    paginator: PaginationGenerator, pagination, index_to_assert
+):
+    paginator.total_pages = 3
+    result = paginator._find_last_valid_number_index(pagination)
+
+    assert result == index_to_assert
+
+
+@pytest.mark.parametrize(
+    "pagination, next_chunk, result_to_assert",
+    (
+        (deque([1, 2, 3]), deque([3]), deque([1, 2])),
+        (deque([1, 2, 3]), deque([]), deque([1, 2, 3])),
+        (deque([]), deque([3]), deque([])),
+    ),
+    ids=[
+        "success",
+        "not_next_chunk",
+        "not_pagination",
+    ],
+)
+def test__remove_overlapping_numbers(
+    paginator: PaginationGenerator, pagination, next_chunk, result_to_assert
+):
+    result = paginator._remove_overlapping_numbers(pagination, next_chunk)
+
+    assert result == result_to_assert
 
 
 def test_build_pagination(
     mocker,
     paginator: PaginationGenerator,
 ):
-    mocker.patch.object(PaginationGenerator, "_get_beggining", restur_value=set())
-    mocker.patch.object(PaginationGenerator, "_get_middle", restur_value=set())
-    mocker.patch.object(PaginationGenerator, "_get_end", restur_value=set())
+    mocker.patch.object(PaginationGenerator, "_get_beggining", restur_value=deque([]))
+    mocker.patch.object(PaginationGenerator, "_get_middle", restur_value=deque([]))
+    mocker.patch.object(PaginationGenerator, "_get_end", restur_value=deque([]))
     mocker.patch.object(
-        PaginationGenerator, "_clean_numbers_out_of_range", restur_value=set()
+        PaginationGenerator, "_remove_overlapping_numbers", restur_value=deque([])
     )
     mocker.patch.object(
-        PaginationGenerator, "_get_indexes_to_be_fold", restur_value=set()
+        PaginationGenerator, "_slice_valid_pagination", restur_value=deque([])
+    )
+    mocker.patch.object(
+        PaginationGenerator,
+        "_get_indexes_to_fill_with_ellipsis",
+        restur_value=deque([]),
     )
 
     assert isinstance(paginator.build_pagination(), MagicMock)
