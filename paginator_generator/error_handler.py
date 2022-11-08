@@ -3,6 +3,7 @@ class PaginationGeneratorError(ValueError):
 
 
 class PaginationGeneratorErrorHandler:
+    FIRST_PAGE = 1
 
     """
     PaginationGenerator helper class to handle input corner cases.
@@ -17,7 +18,9 @@ class PaginationGeneratorErrorHandler:
         self.around = around
 
     def _check_current_page_out_of_range(self):
-        if self.current_page not in list(range(self.total_pages + 1)):
+        if self.current_page > (self.total_pages) or self.current_page < (
+            self.FIRST_PAGE
+        ):
             raise PaginationGeneratorError(
                 "'current_page' must be within the range of 'total_pages'."
             )

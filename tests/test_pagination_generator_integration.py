@@ -176,3 +176,38 @@ def test_all_zero(paginator: PaginationGenerator):
     paginator.around = 0
 
     assert paginator.build_pagination() == deque([0])
+
+
+def test_all_huge_total_pages(paginator: PaginationGenerator):
+    paginator.total_pages = 1000000000
+    paginator.current_page = 500
+    paginator.boundaries = 5
+    paginator.around = 5
+
+    assert paginator.build_pagination() == deque(
+        [
+            1,
+            2,
+            3,
+            4,
+            5,
+            "...",
+            495,
+            496,
+            497,
+            498,
+            499,
+            500,
+            501,
+            502,
+            503,
+            504,
+            505,
+            "...",
+            999999996,
+            999999997,
+            999999998,
+            999999999,
+            1000000000,
+        ]
+    )
